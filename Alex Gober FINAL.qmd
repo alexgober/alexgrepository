@@ -1,0 +1,64 @@
+---
+title: "Final Project"
+subtitle: "STAT 230 Spring 2025"
+author: "Alex Gober"
+format:
+  html:
+    embed-resources: true
+
+Below I've created a histogram, box plot, and scatterplot of my data
+```{r}
+
+ggplot(Mental_Health_Care_in_the_Last_4_Weeks, aes(x = Value)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Mental Health Value in the Last 4 Weeks",
+       x = "Value (e.g., Days with Poor Mental Health)",
+       y = "Frequency") +
+  theme_minimal()
+  ------
+  
+  ggplot(Mental_Health_Care_in_the_Last_4_Weeks, aes(x = Group, y = Value, fill = Group)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Mental Health Value by Group",
+       x = "Group",
+       y = "Mental Health Value (e.g., Days with Poor Mental Health)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  -----
+  
+  ggplot(Mental_Health_Care_in_the_Last_4_Weeks, aes(x = Confidence.Interval, y = Value)) +
+  geom_point(color = "blue") +
+  labs(title = "Scatterplot of Mental Health Value vs Confidence Interval",
+       x = "Confidence Interval",
+       y = "Mental Health Value (e.g., Days with Poor Mental Health)") +
+  theme_minimal()
+```
+
+
+Below i've summarized the stats of the dataset
+```{r}
+summary_stats <- Mental_Health_Care_in_the_Last_4_Weeks %>%
+  group_by(Group) %>%
+  summarize(
+    Mean = mean(Value, na.rm = TRUE),
+    SD = sd(Value, na.rm = TRUE),
+    Min = min(Value, na.rm = TRUE),
+    Max = max(Value, na.rm = TRUE)
+```
+
+
+Ive made a t-test and anova test in order to analyze data
+```{r}
+t_test_result <- t.test(Value ~ Group, data = Mental_Health_Care_in_the_Last_4_Weeks)
+print(t_test_result)
+-----
+
+anova_result <- aov(Value ~ Group, data = Mental_Health_Care_in_the_Last_4_Weeks)
+summary(anova_result)
+```
+
+Based on the statistical analysis, it appears that taking both prescription medication and therapy together is more effective than taking either treatment individually in improving overall mental health. Individuals in the combined treatment group (Medication + Therapy) report fewer days with poor mental health than those in the other groups. While both medication and therapy individually show some benefit over no treatment, combining the two therapies provides the greatest improvement.
+
+I started with importing the Mental_Health_Care_in_the_Last_4_Weeks data set into RStudio and exploring the structure to find the essential variables. I first classified individuals into categories based on their treatment: Medication Only, Therapy Only, Medication + Therapy, and No Treatment. Then, I plotted boxplots and histograms from these groups and did an ANOVA and Tukey post hoc tests. These tests revealed that combined medication and therapy was more effective than either treatment alone. For the second query, related to age differences among adults, the data were split into two age groups: Under 40 and 40+. T-test was finally conducted and showed that those aged 40 years and above had significantly better results than those below 40. The overall conclusion is that combined treatment is the most effective and more often, older people do better.
+
+
