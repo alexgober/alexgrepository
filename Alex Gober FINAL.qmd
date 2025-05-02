@@ -15,28 +15,36 @@ ggplot(Mental_Health_Care_in_the_Last_4_Weeks, aes(x = Value)) +
        x = "Value (e.g., Days with Poor Mental Health)",
        y = "Frequency") +
   theme_minimal()
-  ------
   
+```
+
+```{r}
+
   ggplot(Mental_Health_Care_in_the_Last_4_Weeks, aes(x = Group, y = Value, fill = Group)) +
   geom_boxplot() +
   labs(title = "Boxplot of Mental Health Value by Group",
        x = "Group",
-       y = "Mental Health Value (e.g., Days with Poor Mental Health)") +
+       y = "Mental Health Value") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  -----
   
-  ggplot(Mental_Health_Care_in_the_Last_4_Weeks, aes(x = Confidence.Interval, y = Value)) +
+```
+
+```{r}
+
+ggplot(Mental_Health_Care_in_the_Last_4_Weeks, aes(x = Confidence_Interval, y = Value)) +
   geom_point(color = "blue") +
   labs(title = "Scatterplot of Mental Health Value vs Confidence Interval",
-       x = "Confidence Interval",
-       y = "Mental Health Value (e.g., Days with Poor Mental Health)") +
+       x = "Confidence_Interval",
+       y = "Mental Health Value") +
   theme_minimal()
+  
 ```
 
 
 Below i've summarized the stats of the dataset
 ```{r}
+
 summary_stats <- Mental_Health_Care_in_the_Last_4_Weeks %>%
   group_by(Group) %>%
   summarize(
@@ -44,21 +52,65 @@ summary_stats <- Mental_Health_Care_in_the_Last_4_Weeks %>%
     SD = sd(Value, na.rm = TRUE),
     Min = min(Value, na.rm = TRUE),
     Max = max(Value, na.rm = TRUE)
+  )
+print(summary_stats)
+
 ```
+ Group                                          Mean    SD   Min   Max
+   <chr>                                         <dbl> <dbl> <dbl> <dbl>
+ 1 By Age                                         16.0  7.72   1.4  33.9
+ 2 By Disability status                           23.9 13.2    7.8  49.5
+ 3 By Education                                   16.4  6.70   5.6  30  
+ 4 By Gender identity                             26.0 15.2    7.3  62.9
+ 5 By Presence of Symptoms of Anxiety/Depression  20.0 12.6    2.4  45.7
+ 6 By Race/Hispanic ethnicity                     15.2  6.72   4.4  32.9
+ 7 By Sex                                         16.6  7.81   6.7  33.8
+ 8 By Sexual orientation                          26.6 11.3    8.6  51.9
+ 9 By State                                       17.4  7.66   3.3  39.3
+10 National Estimate                              16.8  6.50   8.7  27.1
 
 
-Ive made a t-test and anova test in order to analyze data
+Ive made a two correlations below.
 ```{r}
-t_test_result <- t.test(Value ~ Group, data = Mental_Health_Care_in_the_Last_4_Weeks)
-print(t_test_result)
------
 
-anova_result <- aov(Value ~ Group, data = Mental_Health_Care_in_the_Last_4_Weeks)
-summary(anova_result)
+gender_df <- Mental_Health_Care_in_the_Last_4_Weeks %>%
+  filter(Indicator == "Received Counseling or Therapy, Last 4 Weeks", Group == "By Sex") %>%
+  mutate(GenderCode = ifelse(Subgroup == "Male", 0, 1))
+
+gender_correlation <- cor.test(gender_df$Value, gender_df$GenderCode, method = "pearson")
+print(gender_correlation)
+
 ```
+	Pearson's product-moment correlation
 
-Based on the statistical analysis, it appears that taking both prescription medication and therapy together is more effective than taking either treatment individually in improving overall mental health. Individuals in the combined treatment group (Medication + Therapy) report fewer days with poor mental health than those in the other groups. While both medication and therapy individually show some benefit over no treatment, combining the two therapies provides the greatest improvement.
+data:  gender_df$Value and gender_df$GenderCode
+t = 26.816, df = 64, p-value < 2.2e-16
+alternative hypothesis: true correlation is not equal to 0
+95 percent confidence interval:
+ 0.9325116 0.9743221
+sample estimates:
+      cor 
+0.9582655 
+```{r}
 
-I started with importing the Mental_Health_Care_in_the_Last_4_Weeks data set into RStudio and exploring the structure to find the essential variables. I first classified individuals into categories based on their treatment: Medication Only, Therapy Only, Medication + Therapy, and No Treatment. Then, I plotted boxplots and histograms from these groups and did an ANOVA and Tukey post hoc tests. These tests revealed that combined medication and therapy was more effective than either treatment alone. For the second query, related to age differences among adults, the data were split into two age groups: Under 40 and 40+. T-test was finally conducted and showed that those aged 40 years and above had significantly better results than those below 40. The overall conclusion is that combined treatment is the most effective and more often, older people do better.
+filtered_data <- Mental_Health_Care_in_the_Last_4_Weeks %>%
+  filter(!is.na(Value), !is.na(LowCI), !is.na(HighCI))
+  numeric_data <- filtered_data %>%
+  select(Value, LowCI, HighCI)
+cor_matrix <- cor(numeric_data)
+print(round(cor_matrix, 2))
 
+
+```
+       Value LowCI HighCI
+Value   1.00  0.99   0.99
+LowCI   0.99  1.00   0.94
+HighCI  0.99  0.94   1.00
+
+
+Data indicates that much more women than men will be likely to seek therapy or counseling for mental health. Correlation coefficient was very high (0.96) as it clearly suggests a strong link between being female and receipt of mental health support. This difference isn't attributable to chance-rather, it's a truly evident trend in the numbers. 
+
+Although the graphs help provide overall patterns of the data they don't really show who is taking medications. But if there were to be more women in counseling, chances are pretty high there will be a corresponding number for those on mental health medication. All the other data, such as confidence intervals, just hold up the numbers as truth.
+
+While this data does show off how the data is analyzed, some graphs are much better for clearly showing gender differences in mental health treatment than general histograms or scatterplots. Things such as Bar Charts
 
